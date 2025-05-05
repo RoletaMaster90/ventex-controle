@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,13 +16,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: start;
-      height: 100vh;
+      justify-content: flex-start;
+      min-height: 100vh;
     }
     img.logo {
-      width: 80%;
+      width: 90%;
       margin-top: 20px;
-      border-radius: 12px;
+      border-radius: 20px;
     }
     button {
       margin: 10px;
@@ -42,21 +43,123 @@
       margin-top: 15px;
       font-size: 16px;
     }
+    .speed-indicator {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      font-size: 14px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
   <img src="logo_ventex.png" alt="Logo Ventex" class="logo">
 
-  <button>Luz</button>
-  <button>Ventilador</button>
-  <button>Modo Soneca</button>
-  <button>Velocidade</button>
-  <button>Ventilação/Exaustão</button>
-  <button>Temporizador</button>
-  <button>Temperatura</button>
+  <button onclick="handleClick('luz')" id="btn-luz">Luz <i id="icon-luz" class="fas fa-lightbulb"></i></button>
+  <button onclick="handleClick('vent')" id="btn-vent">Ventilador <i id="icon-vent" class="fas fa-fan"></i> <span id="speed-indicator" class="speed-indicator">1</span></button>
+  <button onclick="toggleSoneca()" id="btn-soneca">Modo Soneca <i id="icon-soneca" class="fas fa-moon"></i></button>
+  <button onclick="handleSpeedClick()" id="btn-vel">Velocidade</button>
+  <button onclick="toggleExaustor()" id="btn-exaustor">Ventilação/Exaustão <i id="icon-exaustor" class="fas fa-arrow-up"></i></button>
+  <button onclick="handleTimer()" id="btn-timer">Temporizador</button>
+  <button onclick="monitorarTemperatura()" id="btn-temp"><i class="fas fa-thermometer-half"></i> Temperatura</button>
 
-  <div class="status">Status: Pronto</div>
+  <div class="status" id="status">Status: Pronto</div>
+
+  <script>
+    const ip = "http://192.168.4.1";
+    const status = document.getElementById("status");
+    let luzState = false, ventState = false, sonecaState = false, exaustorState = false;
+    let speedClicks = 0, timerClicks = 0;
+
+    function beep() {
+      const audio = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQgAAAAA");
+      audio.play();
+    }
+
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = "pt-BR";
+      window.speechSynthesis.speak(msg);
+    }
+
+    function handleClick(tipo) {
+      if (tipo === 'luz') {
+        luzState = !luzState;
+        document.getElementById('icon-luz').className = luzState ? "fas fa-lightbulb" : "fas fa-lightbulb-slash";
+        sendCommand(luzState ? "luz_on" : "luz_off");
+        speak(luzState ? "Luz ligada" : "Luz desligada");
+      } else if (tipo === 'vent') {
+        ventState = !ventState;
+        document.getElementById('icon-vent').className = ventState ? "fas fa-fan" : "fas fa-fan-slash";
+        document.getElementById('speed-indicator').innerText = ventState ? "1" : "";
+        sendCommand(ventState ? "vent_on" : "vent_off");
+        speak(ventState ? "Ventilador ligado. Velocidade um ativada" : "Ventilador desligado");
+        speedClicks = 0;
+      }
+      beep();
+    }
+
+    function toggleSoneca() {
+      sonecaState = !sonecaState;
+      document.getElementById('icon-soneca').className = sonecaState ? "fas fa-moon" : "fas fa-bed";
+      if (sonecaState && luzState) {
+        luzState = false;
+        document.getElementById('icon-luz').className = "fas fa-lightbulb-slash";
+        sendCommand("luz_off");
+      }
+      sendCommand("soneca");
+      speak(sonecaState ? "Modo soneca ativado" : "Modo soneca desativado");
+      beep();
+    }
+
+    function handleSpeedClick() {
+      if (!ventState) {
+        speak("Ligue o ventilador primeiro");
+        return;
+      }
+      speedClicks = (speedClicks % 5) + 1;
+      document.getElementById('speed-indicator').innerText = speedClicks;
+      sendCommand("vel" + speedClicks);
+      speak("Velocidade " + speedClicks + " ativada");
+      beep();
+    }
+
+    function toggleExaustor() {
+      exaustorState = !exaustorState;
+      sendCommand(exaustorState ? "exaut_on" : "exaut_off");
+      speak(exaustorState ? "Modo exaustão ligado" : "Exaustão desligada");
+      beep();
+    }
+
+    function handleTimer() {
+      timerClicks = (timerClicks % 3) + 1;
+      sendCommand("timer" + timerClicks);
+      speak("Ventilador desliga em " + timerClicks + " hora" + (timerClicks > 1 ? "s" : ""));
+      beep();
+    }
+
+    function monitorarTemperatura() {
+      const temp = Math.floor(Math.random() * 20) + 15;
+      if (temp < 20) {
+        speak("Temperatura 2 ativada");
+        sendCommand("vel2");
+      } else if (temp > 30) {
+        speak("Temperatura 5 ativada");
+        sendCommand("vel5");
+      } else {
+        speak("Temperatura ambiente normal");
+      }
+      beep();
+    }
+
+    function sendCommand(cmd) {
+      status.innerText = "Enviando comando: " + cmd;
+      fetch(`${ip}/${cmd}`)
+        .then(() => status.innerText = `Comando '${cmd}' enviado.`)
+        .catch(() => status.innerText = `Erro ao enviar '${cmd}'`);
+    }
+  </script>
 
 </body>
 </html>
