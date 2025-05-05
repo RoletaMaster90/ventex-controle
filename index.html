@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VENTEX</title>
+  <meta name="theme-color" content="#6F4E37" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #6F4E37;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      height: 100vh;
+    }
+    img.logo {
+      width: 80%;
+      margin-top: 20px;
+      border-radius: 12px;
+    }
+    button {
+      margin: 10px;
+      padding: 20px;
+      width: 80%;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background-color: #3E2723;
+      color: white;
+      transition: background-color 0.3s;
+      position: relative;
+    }
+    button:hover {
+      background-color: #5D4037;
+    }
+    .status {
+      margin-top: 15px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <img src="logo_ventex.png" alt="Logo Ventex" class="logo">
+
+  <button>Luz</button>
+  <button>Ventilador</button>
+  <button>Modo Soneca</button>
+  <button>Velocidade</button>
+  <button>Ventilação/Exaustão</button>
+  <button>Temporizador</button>
+  <button>Temperatura</button>
+
+  <div class="status">Status: Pronto</div>
+
+</body>
+</html>
